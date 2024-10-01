@@ -1,7 +1,10 @@
 FROM ubuntu:20.04 as builder
 
 ARG version
+ARG num_procs
+
 ENV VERSION=$version
+ENV NUM_PROCS=$num_procs
 
 RUN echo "Building srsRAN version $VERSION"
 
@@ -31,11 +34,11 @@ RUN apt-get update && \
     uhd-host
 
 RUN	cd /opt && git clone https://github.com/srsran/srsRAN_Project.git && \
-	cd srsRAN_Project && git checkout release_$VERSION && \
+	cd srsRAN_Project && git checkout $VERSION && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=/opt/srsRAN_Project/target -DENABLE_EXPORT=ON -DENABLE_ZEROMQ=ON -DENABLE_AVX512=False ../ && \
-    make
+    make -j ${NUM_PROCS}
 
 RUN cd /opt/srsRAN_Project/build && make install 
 
